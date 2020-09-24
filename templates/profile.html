@@ -1,5 +1,10 @@
-<p>Welcome {{ session.username }}</p>
+{% if session.username %}
+<p>You are logged in as {{ session.username }}</p>
 <p>You have recorded {{ expense_count }} expenses</p>
 <a href="/new-expense">Insert expense</a><br>
 <a href="/new-income">Insert income</a><br>
 <a href="/logout">Logout</a>
+{% else %}
+<p>You need to be logged in to see your profile</p>
+<a href="/">Return to mainpage to login</a>
+{% endif %}

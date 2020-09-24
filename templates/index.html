@@ -1,8 +1,6 @@
 {% if session.username %}
-<p>Welcome {{ session.username }}</p>
-<a href="/new-expense">Insert expense</a><br>
-<a href="/new-income">Insert income</a><br>
-<a href="/logout">Logout</a>
+<p>You are logged in as {{ session.username }}</p>
+<a href="/profile">Go to your profile</a><br>
 {% else %}
 <h2>The perfect financial planning app for your needs!</h2>
 <form action="/login" method="POST">

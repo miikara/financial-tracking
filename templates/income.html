@@ -1,2 +1,21 @@
 <h2>Income form</h2>
+<form action="/send-income" method="POST">
+    <p><b>Amount:</b></p>
+    <input type="number" name="amount" id="amount" step="0.01" value="0.00" placeholder="0.00" required> <br>
+    <p><b>Date:</b></p>
+    <input type="date" id="income_date" name="income_date"
+           min="2018-01-01" max="2022-12-31" required>
+    <p><b>Category:</b></p>
+        <select name="category" id="category">
+            <option>Investment</option>
+            <option>Gift</option>
+            <option>Other</option>
+            <option>Salary</option>
+        </select>
+        <p><b>Note:</b></p>
+    <textarea name="note" rows="1" cols="50"></textarea>
+    <br><br>
+    <input type="submit" value="Save income">
+    </form>
+<a href="/">Return to mainpage</a>
 

@@ -87,3 +87,19 @@ def send_expense():
 @app.route("/new-income")
 def new_income():
     return render_template("income.html")
+
+@app.route("/send-income", methods=["POST"])
+def send_income():
+    amount = request.form["amount"]
+    income_date = request.form["income_date"]
+    category = request.form["category"]
+    note = request.form["note"]
+    # Fetch used_id
+    username = session["username"]
+    sql = "SELECT user_id FROM users WHERE username=:username"
+    result = db.session.execute(sql, {"username":username})
+    user_id = result.fetchone()[0]
+    sql = "INSERT INTO incomes (income_date,amount,category,user_id, note) VALUES (:income_date,:amount,:category,:user_id,:note)"
+    db.session.execute(sql, {"income_date":income_date, "amount":amount, "category":category, "user_id":user_id, "note":note})
+    db.session.commit()
+    return redirect("/profile")

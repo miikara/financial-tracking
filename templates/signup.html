@@ -1,5 +1,5 @@
-<h2>Sign up</h2>
-<form action="/registration-complete" method="POST">
+<h2>Sign up here</h2>
+<form action="/registration-complete" method="POST" onsubmit="return validate_form(this)">
     <p><b>Username:</b></p>
     <input type="text" name="username"><br>
     <p><b>First name:</b></p>
@@ -14,3 +14,30 @@
     <input type="password" name="confirm_password"><br><br>
     <input type="submit" value="Complete Signup">
 </form>
+<script>
+    function validate_form(form) {
+        username = form.username.value
+        email = form.username.email
+        password = form.password.value
+        length_of_pw = password.length
+        password_confirm = form.confirm_password.value
+        if (username == '') {
+            alert("Please provide a username");
+            return false;
+        }
+        if (email == '') {
+            alert("Please provide an email address");
+            return false;
+        }
+        if (length_of_pw < 5) {
+            alert("Please provide a password with at least 5 characters");
+            return false;
+        }
+        if (password != password_confirm) {
+            alert("Non-matching passwords provided")
+            return false;
+        }
+        return true;
+    }
+</script>
+<a href="/">Return to mainpage</a>
