@@ -4,6 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from os import getenv
 import numpy as np
 import pandas as pd
+import plotly as pt
+import plotly.express as px
+import plotly.io as pio
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -29,7 +32,11 @@ def profile():
     expenses_count = result.fetchone()[0]
     # Return table of expenses as dataframe
     df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
-    return render_template("profile.html",expense_count=expenses_count,tables=[df.to_html(classes='data', header="true",justify="center",max_rows=10, index=False)]) 
+    # Create pie chart of expense structure
+    df_pie = df.groupby('category', as_index=False).agg({"amount": "sum"})
+    expense_pie = px.pie(data_frame=df_pie,values='amount',names='category',color='category')
+    expense_pie = pt.offline.plot(expense_pie,output_type='div')
+    return render_template("profile.html",expense_count=expenses_count,pie=expense_pie,tables=[df.to_html(classes='data',header="true",justify="center",max_rows=10,index=False)]) 
 
 @app.route("/login",methods=["POST"])
 def login():

@@ -5,6 +5,9 @@
 {% for table in tables %}
             {{ table|safe }}
 {% endfor %}<br>
+{% autoescape off %}
+{{ pie }}
+{% endautoescape %}
 <a href="/new-expense">Insert expense</a><br>
 <a href="/new-income">Insert income</a><br>
 <a href="/logout">Logout</a>
