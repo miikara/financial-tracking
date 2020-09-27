@@ -2,6 +2,8 @@ from flask import Flask
 from flask import redirect, render_template, request, session
 from flask_sqlalchemy import SQLAlchemy
 from os import getenv
+import numpy as np
+import pandas as pd
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -9,6 +11,10 @@ app.secret_key = getenv("SECRET_KEY")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 db = SQLAlchemy(app)
+engine_name = db.get_engine(app=app)
+
+# how to pass username to pandas query
+# Put result to plotly graphs
 
 @app.route("/",methods=['GET','POST'])
 def index():
@@ -16,11 +22,14 @@ def index():
 
 @app.route("/profile",methods=['GET','POST'])
 def profile():
-    # Get count of all logged expenses (will be changed to only session user)
-    sql = "SELECT COUNT(expense_id) FROM expenses"
-    result = db.session.execute(sql)
-    count = result.fetchone()[0]
-    return render_template("profile.html",expense_count=count) 
+    username = session["username"]
+    # Get count of all logged expenses
+    sql = "SELECT COUNT(expense_id) FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=:username"
+    result = db.session.execute(sql, {"username":username})
+    expenses_count = result.fetchone()[0]
+    # Return table of expenses as dataframe
+    df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
+    return render_template("profile.html",expense_count=expenses_count,tables=[df.to_html(classes='data', header="true",justify="center",max_rows=10, index=False)]) 
 
 @app.route("/login",methods=["POST"])
 def login():
