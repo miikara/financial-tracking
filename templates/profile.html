@@ -1,12 +1,16 @@
 {% if session.username %}
 <p>You are logged in as {{ session.username }}</p>
 <p>You have recorded {{ expense_count }} expenses</p>
-<p>Your 10 most recent expenses:</p>
+<p>Your most recent expenses:</p>
 {% for table in tables %}
             {{ table|safe }}
 {% endfor %}<br>
 {% autoescape off %}
-{{ pie }}
+<div>
+    <div style="display: inline-block">{{ pie }}</div>
+    <div style="display: inline-block">{{ bar_one }}</div>
+    <div style="display: inline-block">{{ bar_two }}</div>
+</div>
 {% endautoescape %}
 <a href="/new-expense">Insert expense</a><br>
 <a href="/new-income">Insert income</a><br>
