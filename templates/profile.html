@@ -1,20 +1,21 @@
 {% if session.username %}
-<p>You are logged in as {{ session.username }}</p>
-<p>You have recorded {{ expense_count }} expenses</p>
+<p>User: {{ session.username }}</p>
+<p>You have recorded {{ expense_count }} expenses and {{ incomes_count }} incomes</p>
+<a href="/new-expense">Insert new expense</a><br>
+<a href="/new-income">Insert new income</a><br>
+<a href="/logout">Logout</a>
+{% autoescape off %}
+<div>
+    <div style="display: inline-block">{{ bar_one }}</div>
+    <div style="display: inline-block">{{ bar_three }}</div>
+    <div style="display: inline-block">{{ pie }}</div>
+    <div style="display: inline-block">{{ bar_two }}</div>
+</div>
+{% endautoescape %}
 <p>Your most recent expenses:</p>
 {% for table in tables %}
             {{ table|safe }}
 {% endfor %}<br>
-{% autoescape off %}
-<div>
-    <div style="display: inline-block">{{ pie }}</div>
-    <div style="display: inline-block">{{ bar_one }}</div>
-    <div style="display: inline-block">{{ bar_two }}</div>
-</div>
-{% endautoescape %}
-<a href="/new-expense">Insert expense</a><br>
-<a href="/new-income">Insert income</a><br>
-<a href="/logout">Logout</a>
 {% else %}
 <p>You need to be logged in to see your profile</p>
 <a href="/">Return to mainpage to login</a>
