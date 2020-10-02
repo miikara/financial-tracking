@@ -1,22 +1,10 @@
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from flask import Flask
 from flask import redirect, render_template, request, session
-from flask_sqlalchemy import SQLAlchemy
-from os import getenv
-import numpy as np
-import pandas as pd
-import plotly as pt
-import plotly.express as px
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
-app.secret_key = getenv("SECRET_KEY")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db = SQLAlchemy(app)
-engine_name = db.get_engine(app=app)
+from db import db
+from charts import *
 
 @app.route("/",methods=['GET','POST'])
 def index():
@@ -25,50 +13,13 @@ def index():
 @app.route("/profile",methods=['GET','POST'])
 def profile():
     username = session["username"]
-    # Return table of expenses as dataframe
-    df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
-    expenses_count = len(df.index)
-    df['expense_date'] = pd.to_datetime(df['expense_date']) 
-    df['year'] = df['expense_date'].dt.year.astype(int)
-    df['month'] = df['expense_date'].dt.month.astype(int)
-    current_year = pd.datetime.now().year
-    # Create monthly expenses vs ly
-    df_two_years = df.where(df['year'] >= (current_year-1))
-    df_two_years['year'] = df_two_years['year'].astype(str)
-    df_bar = df_two_years.groupby(['category','year','month'], as_index=False).agg({"amount": "sum"})
-    bar = px.bar(data_frame=df_bar,x='month',y='amount',color='year',orientation='v',barmode='group',title='Total monthly expenses vs LY',width=500,height=500)
-    bar = pt.offline.plot(bar,output_type='div')
-    # Create pie chart of expense category % for past 12 months (from 1st of starting month till last of current month)
-    start_date = datetime.today().replace(day=1) + relativedelta(months=-11)
-    end_date = datetime.today().replace(day=1) + relativedelta(months=+1)
-    mask = (df['expense_date'] >= start_date) & (df['expense_date'] < end_date)
-    df_12m = df.loc[mask]
-    df_pie = df_12m.groupby('category', as_index=False).agg({"amount": "sum"})
-    expense_pie = px.pie(data_frame=df_pie,values='amount',names='category',color='category',title='Category shares of expenses for last 12 months',width=500,height=500)
-    expense_pie = pt.offline.plot(expense_pie,output_type='div')
-    # Create stacked bar chart of expense category % per month
-    df_12m['yearmonth'] = pd.to_datetime(df_12m['expense_date']).dt.to_period('M')
-    df_12m['yearmonth'] = df_12m['yearmonth'].astype(str)
-    df_bar_two = df_12m.groupby(['category','yearmonth'], as_index=False).agg({"amount": "sum"})
-    df_bar_two['category%'] = df_bar_two['amount'] / df_bar_two.groupby('yearmonth')['amount'].transform('sum')
-    bar_two = px.bar(data_frame=df_bar_two,x='yearmonth',y='category%',color='category',orientation='v',barmode='relative',title='Category shares of expenses per month',width=500,height=500)
-    bar_two = pt.offline.plot(bar_two,output_type='div')
-    # Create income vs expenses
-    df_incomes = pd.read_sql_query("SELECT income_date,amount,category,note FROM incomes JOIN users ON incomes.user_id = users.user_id WHERE users.username=%(u)s ORDER BY income_date DESC",engine_name, params={"u":username})
-    incomes_count = len(df_incomes.index)
-    df_incomes['income_date'] = pd.to_datetime(df_incomes['income_date']) 
-    mask = (df_incomes['income_date'] >= start_date) & (df_incomes['income_date'] < end_date)
-    df_incomes_12m = df_incomes.loc[mask]
-    df_incomes_12m['yearmonth'] = pd.to_datetime(df_incomes_12m['income_date']).dt.to_period('M')
-    df_incomes_12m['yearmonth'] = df_incomes_12m['yearmonth'].astype(str)
-    df_grouped_incomes = df_incomes_12m.groupby(['yearmonth'], as_index=False).agg({"amount": "sum"})
-    df_grouped_incomes = df_grouped_incomes.assign(type='income')
-    df_grouped_expenses = df_12m.groupby(['yearmonth'], as_index=False).agg({"amount": "sum"})
-    df_grouped_expenses = df_grouped_expenses.assign(type='expense')
-    df_concat = pd.concat([df_grouped_expenses,df_grouped_incomes])
-    bar_three = px.bar(data_frame=df_concat,x='yearmonth',y='amount',color='type',orientation='v',barmode='group',title='Total monthly expenses vs income',width=500,height=500)
-    bar_three = pt.offline.plot(bar_three,output_type='div')
-    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=expense_pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three,tables=[df_concat.to_html(classes='data',header="true",justify="center",max_rows=10,index=False)]) 
+    df = expense_table(username)
+    bar = chart_monthly_expenses(username)
+    bar_two = chart_monthly_expense_categories(username)
+    bar_three = chart_monthly_expenses_vs_incomes(username)
+    pie = chart_expense_categories(username)
+    expenses_count,incomes_count = recorded_counts(username)
+    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three,tables=[df.to_html(classes='data',header="true",justify="center",max_rows=10,index=False)]) 
 
 @app.route("/login",methods=["POST"])
 def login():
