@@ -1,0 +1,26 @@
+<h2>Provide your credentials</h2>
+<form action="/login" method="POST" onsubmit="return validate_form(this)">
+    <p>Username:<br>
+    <input type="text" name="username"></p>
+    <p>Password:<br>
+    <input type="password" name="password"></p>
+    <input type="submit" value="Login">
+    {{ error_note }}
+</form>
+<a href="/">Return to mainpage</a>
+<script>
+    function validate_form(form) {
+        username = form.username.value
+        password = form.password.value
+        length_of_pw = password.length
+        if (username == '') {
+            alert("Please provide a username");
+            return false;
+        }
+        if (length_of_pw < 5) {
+            alert("Please provide a password with at least 5 characters");
+            return false;
+        }
+        return true;
+    }
+</script>

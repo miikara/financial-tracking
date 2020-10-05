@@ -21,53 +21,54 @@ def profile():
     expenses_count,incomes_count = recorded_counts(username)
     return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three,tables=[df.to_html(classes='data',header="true",justify="center",max_rows=10,index=False)]) 
 
-@app.route("/login",methods=["POST"])
+@app.route("/login",methods=["GET","POST"])
 def login():
-    username = request.form["username"]
-    password = request.form["password"]
-    # Give session the username
-    session["username"] = username
-    # Verify user and password
-    sql = "SELECT password FROM users WHERE username=:username"
-    result = db.session.execute(sql, {"username":username})
-    user = result.fetchone() 
-    if user == None:
-        del session["username"]
-    else:
-        hash_value = user[0]
-        if check_password_hash(hash_value,password):
-            return redirect("/profile")
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        session["username"] = username
+        sql = "SELECT password FROM users WHERE username=:username"
+        result = db.session.execute(sql, {"username":username})
+        user = result.fetchone() 
+        if user == None:
+            del session["username"]
+            return render_template("login.html",error_note="Username doesn't exist. Please try again or signup.")
         else:
-            del session["username"] 
-    return redirect("/")
+            hash_value = user[0]
+            if check_password_hash(hash_value,password):
+                return redirect("/profile")
+            else:
+                del session["username"]
+                return render_template("login.html",error_note="Incorrect password. Please try again.")
+    else:
+        return render_template("login.html")
 
 @app.route("/logout")
 def logout():
     del session["username"]
     return redirect("/")
 
-@app.route("/signup")
+@app.route("/signup",methods=["GET","POST"])
 def signup():
-    return render_template("signup.html") 
-
-@app.route("/registration-complete", methods=["GET","POST"])
-def registration_complete():
-    username = request.form["username"]
-    first_name = request.form["first_name"]
-    last_name = request.form["last_name"]
-    email = request.form["email"]
-    password = request.form["password"]
-    hash_value = generate_password_hash(password)
-    sql = "SELECT username FROM users WHERE username=:username"
-    result = db.session.execute(sql, {"username":username})
-    username_db = result.fetchone() 
-    if username_db:
-        return redirect("/duplicate-username")
+    if request.method == "POST":
+        username = request.form["username"]
+        first_name = request.form["first_name"]
+        last_name = request.form["last_name"]
+        email = request.form["email"]
+        password = request.form["password"]
+        hash_value = generate_password_hash(password)
+        sql = "SELECT username FROM users WHERE username=:username"
+        result = db.session.execute(sql, {"username":username})
+        username_db = result.fetchone() 
+        if username_db:
+            return redirect("/duplicate-username")
+        else:
+            sql = "INSERT INTO users (username, first_name, last_name, email, password, registration_time) VALUES (:username,:first_name,:last_name,:email,:password, NOW())"    
+            db.session.execute(sql, {"username":username,"first_name":first_name,"last_name":last_name,"password":hash_value,"email":email})
+            db.session.commit()
+            return redirect("/")
     else:
-        sql = "INSERT INTO users (username, first_name, last_name, email, password, registration_time) VALUES (:username,:first_name,:last_name,:email,:password, NOW())"    
-        db.session.execute(sql, {"username":username,"first_name":first_name,"last_name":last_name,"password":hash_value,"email":email})
-        db.session.commit()
-        return redirect("/")
+        return render_template("signup.html") 
 
 @app.route("/duplicate-username")
 def duplicate_username():
