@@ -1,8 +1,10 @@
 from app import app
 from flask import redirect, render_template, request, session
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 from db import db
 from charts import *
+from expense import *
+from user import *
 
 @app.route("/")
 def index():
@@ -24,15 +26,15 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        user_id = get_user_id(username)
         session["username"] = username
-        sql = "SELECT password FROM users WHERE username=:username"
-        result = db.session.execute(sql, {"username":username})
-        user = result.fetchone() 
-        if user == None:
+        session["user_id"] = user_id
+        pw = get_password(username)
+        if pw == None:
             del session["username"]
             return render_template("login.html",error_note="Username doesn't exist. Please try again or signup.")
         else:
-            hash_value = user[0]
+            hash_value = pw
             if check_password_hash(hash_value,password):
                 return redirect("/profile")
             else:
@@ -54,16 +56,10 @@ def signup():
         last_name = request.form["last_name"]
         email = request.form["email"]
         password = request.form["password"]
-        hash_value = generate_password_hash(password)
-        sql = "SELECT username FROM users WHERE username=:username"
-        result = db.session.execute(sql, {"username":username})
-        username_db = result.fetchone() 
-        if username_db:
+        if username_exists(username):
             return render_template("signup.html",error_note="Username already taken. Please select another one.")
         else:
-            sql = "INSERT INTO users (username, first_name, last_name, email, password, registration_time) VALUES (:username,:first_name,:last_name,:email,:password, NOW())"    
-            db.session.execute(sql, {"username":username,"first_name":first_name,"last_name":last_name,"password":hash_value,"email":email})
-            db.session.commit()
+            add_user(username,first_name,last_name,email,password)
             return redirect("/login")
     else:
         return render_template("signup.html")
@@ -79,12 +75,8 @@ def send_expense():
     category = request.form["category"]
     note = request.form["note"]
     username = session["username"]
-    sql = "SELECT user_id FROM users WHERE username=:username"
-    result = db.session.execute(sql, {"username":username})
-    user_id = result.fetchone()[0]
-    sql = "INSERT INTO expenses (amount,expense_date,category,user_id, note) VALUES (:amount,:expense_date,:category,:user_id,:note)"
-    db.session.execute(sql, {"amount":amount, "expense_date":expense_date, "category":category, "user_id":user_id, "note":note})
-    db.session.commit()
+    user_id = session["user_id"]
+    add_expense(amount,expense_date,category,user_id,note)
     return redirect("/profile")
 
 @app.route("/new-income")
@@ -98,10 +90,6 @@ def send_income():
     category = request.form["category"]
     note = request.form["note"]
     username = session["username"]
-    sql = "SELECT user_id FROM users WHERE username=:username"
-    result = db.session.execute(sql, {"username":username})
-    user_id = result.fetchone()[0]
-    sql = "INSERT INTO incomes (income_date,amount,category,user_id, note) VALUES (:income_date,:amount,:category,:user_id,:note)"
-    db.session.execute(sql, {"income_date":income_date, "amount":amount, "category":category, "user_id":user_id, "note":note})
-    db.session.commit()
+    user_id = session["user_id"]
+    add_income(amount,expense_date,category,user_id,note)
     return redirect("/profile")

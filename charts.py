@@ -9,20 +9,21 @@ from app import app
 # Assign engine name to work with pandas queries
 engine_name = db.get_engine(app=app)
 
-def recorded_counts(user):
-    df_expenses = pd.read_sql_query("SELECT expense_id FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s",engine_name, params={"u":user})
+# Change user to username
+def recorded_counts(username):
+    df_expenses = pd.read_sql_query("SELECT expense_id FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s",engine_name, params={"u":username})
     expenses_count = len(df_expenses.index)
-    df_incomes = pd.read_sql_query("SELECT income_id FROM incomes JOIN users ON incomes.user_id = users.user_id WHERE users.username=%(u)s",engine_name, params={"u":user})
+    df_incomes = pd.read_sql_query("SELECT income_id FROM incomes JOIN users ON incomes.user_id = users.user_id WHERE users.username=%(u)s",engine_name, params={"u":username})
     incomes_count = len(df_incomes.index)
     return (expenses_count,incomes_count)
 
-def expense_table(user):
-    df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":user})
+def expense_table(username):
+    df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
     return df
 
-def chart_monthly_expenses(user):
-    if recorded_counts(user)[0]>0:
-        df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":user})
+def chart_monthly_expenses(username):
+    if recorded_counts(username)[0]>0:
+        df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
         df['expense_date'] = pd.to_datetime(df['expense_date']) 
         df['year'] = df['expense_date'].dt.year.astype(int)
         df['month'] = df['expense_date'].dt.month.astype(int)
@@ -36,9 +37,9 @@ def chart_monthly_expenses(user):
         chart = ""
     return chart
 
-def chart_expense_categories(user):
-    if recorded_counts(user)[0]>0:
-        df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":user})
+def chart_expense_categories(username):
+    if recorded_counts(username)[0]>0:
+        df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s",engine_name, params={"u":username})
         df['expense_date'] = pd.to_datetime(df['expense_date']) 
         start_date = datetime.today().replace(day=1) + relativedelta(months=-11)
         end_date = datetime.today().replace(day=1) + relativedelta(months=+1)
@@ -51,9 +52,9 @@ def chart_expense_categories(user):
         chart = ""
     return chart
 
-def chart_monthly_expense_categories(user):
-    if recorded_counts(user)[0]>0:
-        df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":user})
+def chart_monthly_expense_categories(username):
+    if recorded_counts(username)[0]>0:
+        df = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
         df['expense_date'] = pd.to_datetime(df['expense_date']) 
         start_date = datetime.today().replace(day=1) + relativedelta(months=-11)
         end_date = datetime.today().replace(day=1) + relativedelta(months=+1)
@@ -70,12 +71,12 @@ def chart_monthly_expense_categories(user):
     return chart
 
 
-def chart_monthly_expenses_vs_incomes(user):
-    if recorded_counts(user)[0] and recorded_counts(user)[1] >0:
+def chart_monthly_expenses_vs_incomes(username):
+    if recorded_counts(username)[0] and recorded_counts(username)[1] >0:
         start_date = datetime.today().replace(day=1) + relativedelta(months=-11)
         end_date = datetime.today().replace(day=1) + relativedelta(months=+1)
         # Income
-        df_incomes = pd.read_sql_query("SELECT income_date,amount,category,note FROM incomes JOIN users ON incomes.user_id = users.user_id WHERE users.username=%(u)s ORDER BY income_date DESC",engine_name, params={"u":user})
+        df_incomes = pd.read_sql_query("SELECT income_date,amount,category,note FROM incomes JOIN users ON incomes.user_id = users.user_id WHERE users.username=%(u)s ORDER BY income_date DESC",engine_name, params={"u":username})
         df_incomes['income_date'] = pd.to_datetime(df_incomes['income_date']) 
         mask = (df_incomes['income_date'] >= start_date) & (df_incomes['income_date'] < end_date)
         df_incomes_filtered = df_incomes.loc[mask]
@@ -84,7 +85,7 @@ def chart_monthly_expenses_vs_incomes(user):
         df_incomes_grouped = df_incomes_filtered.groupby(['yearmonth'], as_index=False).agg({"amount": "sum"})
         df_incomes_grouped = df_incomes_grouped.assign(type='income')
         # Expenses
-        df_expenses = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":user})
+        df_expenses = pd.read_sql_query("SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id WHERE users.username=%(u)s ORDER BY expense_date DESC",engine_name, params={"u":username})
         df_expenses['expense_date'] = pd.to_datetime(df_expenses['expense_date']) 
         mask = (df_expenses['expense_date'] >= start_date) & (df_expenses['expense_date'] < end_date)
         df_expenses_filtered = df_expenses.loc[mask]
