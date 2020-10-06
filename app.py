@@ -61,18 +61,14 @@ def signup():
         result = db.session.execute(sql, {"username":username})
         username_db = result.fetchone() 
         if username_db:
-            return redirect("/duplicate-username")
+            return render_template("signup.html",error_note="Username already taken. Please select another one.")
         else:
             sql = "INSERT INTO users (username, first_name, last_name, email, password, registration_time) VALUES (:username,:first_name,:last_name,:email,:password, NOW())"    
             db.session.execute(sql, {"username":username,"first_name":first_name,"last_name":last_name,"password":hash_value,"email":email})
             db.session.commit()
-            return redirect("/")
+            return redirect("/login")
     else:
-        return render_template("signup.html") 
-
-@app.route("/duplicate-username")
-def duplicate_username():
-    return render_template("duplicate_username.html") 
+        return render_template("signup.html")
 
 @app.route("/new-expense")
 def new_expense():
