@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash
 from db import db
 from charts import *
 from expense import *
+from income import *
 from user import *
 
 @app.route("/")
@@ -19,7 +20,7 @@ def profile():
     bar_three = chart_monthly_expenses_vs_incomes(username)
     pie = chart_expense_categories(username)
     expenses_count,incomes_count = recorded_counts(username)
-    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three,tables=[df.to_html(classes='data',header="true",justify="center",max_rows=10,index=False)]) 
+    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three,tables=df) 
 
 @app.route("/login",methods=["GET","POST"])
 def login():
@@ -91,5 +92,16 @@ def send_income():
     note = request.form["note"]
     username = session["username"]
     user_id = session["user_id"]
-    add_income(amount,expense_date,category,user_id,note)
+    add_income(amount,income_date,category,user_id,note)
     return redirect("/profile")
+
+@app.route("/search", methods=["GET","POST"])
+def search():
+    session["username"] = username
+    start_date = request.form["start_date"]
+    end_date = request.form["end_date"]
+    category = request.form["category"]
+    note_text = request.form["note_text"]
+    # Change function to filter based on parameters
+    expense_table = search_expenses(username,start_date,end_date)
+    return render_template("search.html",expense_table=expense_table)
