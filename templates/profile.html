@@ -3,6 +3,7 @@
 <p>You have recorded {{ expense_count }} expenses and {{ incomes_count }} incomes</p>
 <a href="/new-expense">Insert new expense</a><br>
 <a href="/new-income">Insert new income</a><br>
+<a href="/search">Search expenses and incomes</a><br>
 <a href="/logout">Logout</a>
 {% autoescape off %}
 <div>
@@ -12,10 +13,6 @@
     <div style="display: inline-block">{{ bar_two }}</div>
 </div>
 {% endautoescape %}
-<p>Most recent and oldest expenses:</p>
-{% for table in tables %}
-            {{ table|safe }}
-{% endfor %}<br>
 {% else %}
 <p>You need to be logged in to see your profile</p>
 <a href="/">Return to mainpage to login</a>
