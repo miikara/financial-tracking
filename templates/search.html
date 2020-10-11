@@ -1,18 +1,23 @@
-<h2>Search and view your expenses</h2>
+<h2>Reports</h2>
 <form action="/search" method="POST">
+    <p><b>Report type:</b></p>
+    <select name="report" id="report">
+        <option>Expense list</option>
+        <option>Income list</option>
+        <option>Period balance calculation</option>
+    </select>
     <p><b>Start date:</b></p>
     <input type="date" id="start_date" name="start_date"
     min="2018-01-01" max="2022-12-31" required><br>
     <p><b>End date:</b></p>
     <input type="date" id="end_date" name="end_date"
     min="2018-01-01" max="2022-12-31" required><br>
-    <p><b>Category:</b></p>  
+    <p><b>Category contains:</b></p>  
     <input type="text" name="category"><br>
     <p><b>Note contains:</b></p>  
     <input type="text" name="note_text"><br><br>
     <input type="submit" value="Search">
 </form>
-<p>Expenses:</p>
-{% for table in expense_table %}
-            {{ table|safe }}
-{% endfor %}<br>
+<a href="/profile">Return to your profile</a><br>
+<p>{{ total }}</p>
+{{ table|safe }}

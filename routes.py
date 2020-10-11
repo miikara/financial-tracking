@@ -1,7 +1,6 @@
 from app import app
 from flask import redirect, render_template, request, session
 from werkzeug.security import check_password_hash
-from db import db
 from charts import *
 from expense import *
 from income import *
@@ -14,13 +13,12 @@ def index():
 @app.route("/profile",methods=['GET','POST'])
 def profile():
     username = session["username"]
-    df = expense_table(username)
     bar = chart_monthly_expenses(username)
     bar_two = chart_monthly_expense_categories(username)
     bar_three = chart_monthly_expenses_vs_incomes(username)
     pie = chart_expense_categories(username)
     expenses_count,incomes_count = recorded_counts(username)
-    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three,tables=df) 
+    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three) 
 
 @app.route("/login",methods=["GET","POST"])
 def login():
@@ -86,22 +84,33 @@ def new_income():
 
 @app.route("/send-income", methods=["POST"])
 def send_income():
+    username = session["username"]
+    user_id = session["user_id"]
     amount = request.form["amount"]
     income_date = request.form["income_date"]
     category = request.form["category"]
     note = request.form["note"]
-    username = session["username"]
-    user_id = session["user_id"]
     add_income(amount,income_date,category,user_id,note)
     return redirect("/profile")
 
 @app.route("/search", methods=["GET","POST"])
 def search():
-    session["username"] = username
-    start_date = request.form["start_date"]
-    end_date = request.form["end_date"]
-    category = request.form["category"]
-    note_text = request.form["note_text"]
-    # Change function to filter based on parameters
-    expense_table = search_expenses(username,start_date,end_date)
-    return render_template("search.html",expense_table=expense_table)
+    if request.method == "POST":
+        username = session["username"]
+        report = request.form["report"]
+        start_date = request.form["start_date"]
+        end_date = request.form["end_date"]
+        category = request.form["category"]
+        note_text = request.form["note_text"]
+        if report == "Expense list":
+            df,total = search_expenses(username,start_date,end_date,category,note_text)
+            total_str = "Total expenses for the period from "+str(start_date)+" to "+str(end_date)+" total "+str(total)
+        elif report == "Income list":
+            df,total = search_incomes(username,start_date,end_date,category,note_text)
+            total_str = "Total incomes for the period from "+str(start_date)+" to "+str(end_date)+" total "+str(total)
+        elif report == "Period balance calculation":
+            df,total = search_net_balance(username,start_date,end_date,category,note_text)
+            total_str = "Total net balance for the period from "+str(start_date)+" to "+str(end_date)+" total "+str(total)
+        return render_template("search.html",total=total_str,table=df.to_html(classes='data',header="true",justify="left",max_rows=150,index=False))
+    else:
+        return render_template("search.html")
