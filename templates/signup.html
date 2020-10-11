@@ -1,3 +1,8 @@
+{% extends "layout.html" %}
+{% block title %}
+Signup
+{% endblock %}
+{% block content %}
 <h2>Sign up here</h2>
 <form action="/signup" method="POST" onsubmit="return validate_form(this)">
     <p><b>Username:</b></p>
@@ -15,6 +20,7 @@
     <input type="submit" value="Complete Signup">
     <p style="color:red;">{{ error_note }}</p> 
 </form>
+<a href="/">Return to mainpage</a>
 <script>
     function validate_form(form) {
         username = form.username.value
@@ -41,4 +47,4 @@
         return true;
     }
 </script>
-<a href="/">Return to mainpage</a>
+{% endblock %}

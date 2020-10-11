@@ -1,3 +1,8 @@
+{% extends "layout.html" %}
+{% block title %}
+Income Form
+{% endblock %}
+{% block content %}
 <h2>Income form</h2>
 <form action="/send-income" method="POST">
     <p><b>Amount:</b></p>
@@ -16,6 +21,7 @@
     <textarea name="note" rows="1" cols="50"></textarea>
     <br><br>
     <input type="submit" value="Save income">
-    </form>
-<a href="/profile">Return to your profile</a>
+</form>
+<br><a href="/profile">Return to your profile</a>
+{% endblock %}
 

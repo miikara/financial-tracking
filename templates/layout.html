@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<title>Financial Compass - {% block title %}{% endblock %}</title>
+<h1>Financial Compass</h1>
+<body>
+    {% if session.username %}
+    <p>User: {{ session.username }}</p>
+    <a href="/logout">Logout</a>
+    {% endif %}
+<hr>{% block content %}{% endblock %}<hr>
+</body>
+</html>
