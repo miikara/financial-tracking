@@ -2,19 +2,20 @@ FINANCIAL TRACKING APP
 Deployed on:
 https://financial-compass.herokuapp.com/
 
-CURRENT FUNCTIONALITIES
-- Creating your own user profile under which to track your spending 
-- Adding and categorizing your expenses and income
-- Adding comments to expenses and income
-- Visualizing your expenses, income and balance behavior under your profile
+TOIMINNALLISUUDET ILMAN KIRJAUTUMISTA
+- Käyttäjä voi luoda oman käyttäjäprofiilinsa
+- Käyttäjä voi kirjautus sovellukseen
 
-UNDER CONSTRUCTION:
-- Refactoring of application structure
-- Allow user to query their expenses and incomes under the profile page
-- Allow user to create custom categories (unless that hurts the dashboard more than it benefits)
-- Improved login validation
-- Styling and user experience
+TOIMINNALLISUUDET KIRJAUTUNEENA
+- Käyttäjä voi kirjautua ulos
+- Käyttäjä voi navigoida profiilin sivujen välillä navigointipalkilla
+- Käyttäjä voi syöttää kuluja kategorioittain ja lisätä niihin muistiinpanoja
+- Käyttäjä voi syöttää tuloja kategorioittain ja lisätä niihin muistiinpanoja
+- Käyttäjä voi poistaa kuluja
+- Käyttäjä voi poistaa tuloja
+- Käyttäjä voi tarkastella taloudellista tilannettaan graafisesti dashboard-välilehdellä
+- Käyttäjä voi ajaa yksinkertaisia raportteja taloudellisesta tilanteestaan reports-välilehdellä
 
-TESTING APPLICATION
-- Application dashboard and session management is best tested by utilising username: testi with password: testii. This user has a decent amount of logged expenses and incomes so that the functionalities of the dashboard can be observed
-- Signup can be tested by creating a new user account and inserting expenses and incomes in your profile when logged in.
+SOVELLUKSEN TESTAUS
+- Sovellusta voi parhaiten testata joko luomalla uuden käyttäjän tai kirjautumalla käyttäjänimellä "testi" salasanalla "testii". 
+- "testi" käyttäjällä on merkittävä määrä sekä kulu että tulohistoriaa jolloin visualisointien ja raporttien käyttöä on helppo kokeilla
