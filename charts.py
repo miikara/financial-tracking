@@ -20,22 +20,22 @@ def recorded_counts(username):
     return (expenses_count,incomes_count)
 
 def search_expenses(username,start_date,end_date,category="",note_text=""):
-    sql = """SELECT expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id 
+    sql = """SELECT expense_id AS id,expense_date,amount,category,note FROM expenses JOIN users ON expenses.user_id = users.user_id 
             WHERE users.username=%(u)s AND expense_date BETWEEN %(start)s AND %(end)s"""
     df = pd.read_sql_query(sql,engine_name,params={"u":username,"start":start_date,"end":end_date})
     if len(category)>0:
-        df = df[df["category"]==category]
+        df = df[df["category"].str.contains(category,na=False)]
     if len(note_text)>0:
         df = df[df["note"].str.contains(note_text,na=False)]
     total = df["amount"].sum(skipna=True)
     return df,total
 
 def search_incomes(username,start_date,end_date,category="",note_text=""):
-    sql = """SELECT income_date,amount,category,note FROM incomes JOIN users ON incomes.user_id = users.user_id 
+    sql = """SELECT income_id AS id,income_date,amount,category,note FROM incomes JOIN users ON incomes.user_id = users.user_id 
             WHERE users.username=%(u)s AND income_date BETWEEN %(start)s AND %(end)s"""
     df = pd.read_sql_query(sql,engine_name,params={"u":username,"start":start_date,"end":end_date})
     if len(category)>0:
-        df = df[df["category"]==category]
+        df = df[df["category"].str.contains(category,na=False)]
     if len(note_text)>0:
         df = df[df["note"].str.contains(note_text,na=False)]
     total = df["amount"].sum(skipna=True)
@@ -45,14 +45,18 @@ def search_net_balance(username,start_date,end_date,category="",note_text=""):
     df_incomes,total_incomes = search_incomes(username,start_date,end_date,category,note_text)
     df_expenses,total_expenses = search_expenses(username,start_date,end_date,category,note_text)
     total = total_incomes - total_expenses
-    expenses_grouped = df_expenses.groupby(["category"],as_index=False).agg({"amount":"sum"})
-    expenses_grouped.loc["Total expenses"] = expenses_grouped.sum()
-    expenses_grouped.at["Total expenses","category"] = "TOTAL EXPENSES"
-    incomes_grouped = df_incomes.groupby(["category"],as_index=False).agg({"amount":"sum"})
-    incomes_grouped.loc["Total incomes"] = incomes_grouped.sum()
-    incomes_grouped.at["Total incomes","category"] = "TOTAL INCOMES"
-    df = pd.concat([incomes_grouped,expenses_grouped])
-    return df,total
+    empty_df = pd.DataFrame()
+    try:
+        expenses_grouped = df_expenses.groupby(["category"],as_index=False).agg({"amount":"sum"})
+        expenses_grouped.loc["Total expenses"] = expenses_grouped.sum()
+        expenses_grouped.at["Total expenses","category"] = "TOTAL EXPENSES"
+        incomes_grouped = df_incomes.groupby(["category"],as_index=False).agg({"amount":"sum"})
+        incomes_grouped.loc["Total incomes"] = incomes_grouped.sum()
+        incomes_grouped.at["Total incomes","category"] = "TOTAL INCOMES"
+        df = pd.concat([incomes_grouped,expenses_grouped])
+        return df,total
+    except:
+        return empty_df,total
 
 def chart_monthly_expenses(username):
     if recorded_counts(username)[0]>0:

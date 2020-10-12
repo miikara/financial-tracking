@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block title %}
+Delete transactions
+{% endblock %}
+{% block content %}
+{% if session.username %}
+<ul class="nav">
+    <li><a href="/profile">Main</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/search">Reports</a></li>
+    <li><a href="/new-expense">Insert new expense</a></li>
+    <li><a href="/new-income">Insert new income</a></li>
+    <li class="active"><a href="/delete">Delete transactions</a></li>
+</ul>
+<form action="/delete" method="POST">
+    <p><b>Transaction type:</b></p>
+    <select name="transaction_type" id="transaction_type">
+        <option>Expense</option>
+        <option>Income</option>
+    </select>
+    <p><b>Transaction id:</b></p>  
+    <input type="number" name="transaction_id" placeholder="Ids can be found in reports"><br>
+    <br><input type="submit" value="Delete"><br>
+</form>
+<div class="p1">
+    <p>{{ note }}</p>
+</div>
+{% else %}
+<div class="p1">
+    <p>You need to be logged in to see your profile</p>
+</div>
+<a href="/">Return to mainpage to login</a>
+{% endif %}
+{% endblock %}

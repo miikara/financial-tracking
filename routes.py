@@ -121,7 +121,22 @@ def search():
             total_str = "Total incomes for the period from "+str(start_date)+" to "+str(end_date)+" equal "+str(total)
         elif report == "Period balance calculation":
             df,total = search_net_balance(username,start_date,end_date,category,note_text)
-            total_str = "Total net balance for the period from "+str(start_date)+" to "+str(end_date)+" equal "+str(total)
+            total_str = "Total net balance for the period from "+str(start_date)+" to "+str(end_date)+" equals "+str(total)
         return render_template("search.html",total=total_str,table=df.to_html(classes='data',header="true",justify="left",max_rows=150,index=False))
     else:
         return render_template("search.html")
+
+@app.route("/delete",methods=["GET","POST"])
+def delete():
+    if request.method == "POST":
+        user_id = session["user_id"]
+        transaction_type = request.form["transaction_type"]
+        transaction_id = request.form["transaction_id"]
+        if transaction_type == "Expense":
+            note = delete_expense(transaction_id,user_id)
+            return render_template("delete.html",note=note)
+        if transaction_type == "Income":
+            note = delete_income(transaction_id,user_id)
+            return render_template("delete.html",note=note)
+    else:
+        return render_template("delete.html")
