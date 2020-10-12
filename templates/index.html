@@ -4,8 +4,10 @@ Main page
 {% endblock %}
 {% block content %}
 {% if session.username %}
+<br>
 <a href="/profile">Go to your profile</a><br>
 {% else %}
+<br>
 <a href="/login">Login to your account</a><br>
 <a href="/signup">Sign up</a><br>
 <h2>The perfect financial planning app for your needs!</h2>

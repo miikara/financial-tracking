@@ -12,13 +12,12 @@ def index():
 
 @app.route("/profile",methods=['GET','POST'])
 def profile():
-    username = session["username"]
-    bar = chart_monthly_expenses(username)
-    bar_two = chart_monthly_expense_categories(username)
-    bar_three = chart_monthly_expenses_vs_incomes(username)
-    pie = chart_expense_categories(username)
-    expenses_count,incomes_count = recorded_counts(username)
-    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count,pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three) 
+    try:
+        username = session["username"]
+        expenses_count,incomes_count = recorded_counts(username)
+    except:
+        expenses_count,incomes_count = (0,0)
+    return render_template("profile.html",expense_count=expenses_count,incomes_count=incomes_count) 
 
 @app.route("/login",methods=["GET","POST"])
 def login():
@@ -76,7 +75,7 @@ def send_expense():
     username = session["username"]
     user_id = session["user_id"]
     add_expense(amount,expense_date,category,user_id,note)
-    return redirect("/profile")
+    return redirect("/new-expense")
 
 @app.route("/new-income")
 def new_income():
@@ -91,7 +90,19 @@ def send_income():
     category = request.form["category"]
     note = request.form["note"]
     add_income(amount,income_date,category,user_id,note)
-    return redirect("/profile")
+    return redirect("/new-income")
+
+@app.route("/dashboard")
+def dashboard():
+    try:
+        username = session["username"]
+        bar = chart_monthly_expenses(username)
+        bar_two = chart_monthly_expense_categories(username)
+        bar_three = chart_monthly_expenses_vs_incomes(username)
+        pie = chart_expense_categories(username)
+    except:
+        pie,bar,bar_two,bar_three = ("","","","")
+    return render_template("dashboard.html",pie=pie,bar_one=bar,bar_two=bar_two,bar_three=bar_three)
 
 @app.route("/search", methods=["GET","POST"])
 def search():
@@ -104,13 +115,13 @@ def search():
         note_text = request.form["note_text"]
         if report == "Expense list":
             df,total = search_expenses(username,start_date,end_date,category,note_text)
-            total_str = "Total expenses for the period from "+str(start_date)+" to "+str(end_date)+" total "+str(total)
+            total_str = "Total expenses for the period from "+str(start_date)+" to "+str(end_date)+" equal "+str(total)
         elif report == "Income list":
             df,total = search_incomes(username,start_date,end_date,category,note_text)
-            total_str = "Total incomes for the period from "+str(start_date)+" to "+str(end_date)+" total "+str(total)
+            total_str = "Total incomes for the period from "+str(start_date)+" to "+str(end_date)+" equal "+str(total)
         elif report == "Period balance calculation":
             df,total = search_net_balance(username,start_date,end_date,category,note_text)
-            total_str = "Total net balance for the period from "+str(start_date)+" to "+str(end_date)+" total "+str(total)
+            total_str = "Total net balance for the period from "+str(start_date)+" to "+str(end_date)+" equal "+str(total)
         return render_template("search.html",total=total_str,table=df.to_html(classes='data',header="true",justify="left",max_rows=150,index=False))
     else:
         return render_template("search.html")

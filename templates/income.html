@@ -3,7 +3,14 @@
 Income Form
 {% endblock %}
 {% block content %}
-<h2>Income form</h2>
+{% if session.username %}
+<ul class="nav">
+    <li><a href="/profile">Main</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="/search">Reports</a></li>
+    <li><a href="/new-expense">Insert new expense</a></li>
+    <li  class="active"><a href="/new-income">Insert new income</a></li>
+</ul>
 <form action="/send-income" method="POST">
     <p><b>Amount:</b></p>
     <input type="number" name="amount" id="amount" step="0.01" value="0.00" placeholder="0.00" required> <br>
@@ -22,6 +29,11 @@ Income Form
     <br><br>
     <input type="submit" value="Save income">
 </form>
-<br><a href="/profile">Return to your profile</a>
+{% else %}
+<div class="p1">
+    <p>You need to be logged in to see your profile</p>
+</div>
+<a href="/">Return to mainpage to login</a>
+{% endif %}
 {% endblock %}
 

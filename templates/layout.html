@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <title>Financial Compass - {% block title %}{% endblock %}</title>
-<h1>Financial Compass</h1>
 <body>
+    <div class="header">
+        <h1>Financial Compass</h1>
+    </div>
     {% if session.username %}
-    <p>User: {{ session.username }}</p>
+    <div class="p1">
+        <p>User: {{ session.username }}</p>
+    </div>
     <a href="/logout">Logout</a>
     {% endif %}
 <hr>{% block content %}{% endblock %}<hr>

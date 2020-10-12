@@ -3,7 +3,14 @@
 Search
 {% endblock %}
 {% block content %}
-<h2>Reports</h2>
+{% if session.username %}
+<ul class="nav">
+    <li><a href="/profile">Main</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li class="active"><a href="/search">Reports</a></li>
+    <li><a href="/new-expense">Insert new expense</a></li>
+    <li><a href="/new-income">Insert new income</a></li>
+</ul>
 <form action="/search" method="POST">
     <p><b>Report type:</b></p>
     <select name="report" id="report">
@@ -23,7 +30,17 @@ Search
     <input type="text" name="note_text"><br><br>
     <input type="submit" value="Search"><br>
 </form>
-<br><a href="/profile">Return to your profile</a>
-<p>{{ total }}</p>
-{{ table|safe }}
+<br>
+<div class="p1">
+    <p>{{ total }}</p>
+</div>
+<div class="p1">
+    <p>{{ table|safe }}</p>
+</div>
+{% else %}
+<div class="p1">
+    <p>You need to be logged in to see your profile</p>
+</div>
+<a href="/">Return to mainpage to login</a>
+{% endif %}
 {% endblock %}
