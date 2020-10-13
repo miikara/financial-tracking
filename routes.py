@@ -24,20 +24,25 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        user_id = get_user_id(username)
-        session["username"] = username
-        session["user_id"] = user_id
-        pw = get_password(username)
-        if pw == None:
-            del session["username"]
-            return render_template("login.html",error_note="Username doesn't exist. Please try again or signup.")
+        if len(username)>200:
+            return render_template("error.html",note="Username too long")
+        if len(password)>200:
+            return render_template("error.html",note="Password too long")
         else:
-            hash_value = pw
-            if check_password_hash(hash_value,password):
-                return redirect("/profile")
-            else:
+            user_id = get_user_id(username)
+            session["username"] = username
+            session["user_id"] = user_id
+            pw = get_password(username)
+            if pw == None:
                 del session["username"]
-                return render_template("login.html",error_note="Incorrect password. Please try again.")
+                return render_template("login.html",error_note="Username doesn't exist. Please try again or signup.")
+            else:
+                hash_value = pw
+                if check_password_hash(hash_value,password):
+                    return redirect("/profile")
+                else:
+                    del session["username"]
+                    return render_template("login.html",error_note="Incorrect password. Please try again.")
     else:
         return render_template("login.html")
 
@@ -54,7 +59,17 @@ def signup():
         last_name = request.form["last_name"]
         email = request.form["email"]
         password = request.form["password"]
-        if username_exists(username):
+        if len(username) > 200:
+            return render_template("error.html",note="Username too long")
+        elif len(first_name) > 200:
+            return render_template("error.html",note="First name too long")
+        elif len(last_name) > 200:
+            return render_template("error.html",note="Last name too long")
+        elif len(email) > 200:
+            return render_template("error.html",note="Email too long")
+        elif len(password) > 200:
+            return render_template("error.html",note="Password too long")
+        elif username_exists(username):
             return render_template("signup.html",error_note="Username already taken. Please select another one.")
         else:
             add_user(username,first_name,last_name,email,password)
@@ -68,14 +83,17 @@ def new_expense():
     
 @app.route("/send-expense", methods=["POST"])
 def send_expense():
+    username = session["username"]
+    user_id = session["user_id"]
     amount = request.form["amount"]
     expense_date = request.form["expense_date"]
     category = request.form["category"]
     note = request.form["note"]
-    username = session["username"]
-    user_id = session["user_id"]
-    add_expense(amount,expense_date,category,user_id,note)
-    return redirect("/new-expense")
+    if len(note) > 3000:
+        return render_template("error.html",note="Note text too long")
+    else:    
+        add_expense(amount,expense_date,category,user_id,note)
+        return redirect("/new-expense")
 
 @app.route("/new-income")
 def new_income():
@@ -89,8 +107,11 @@ def send_income():
     income_date = request.form["income_date"]
     category = request.form["category"]
     note = request.form["note"]
-    add_income(amount,income_date,category,user_id,note)
-    return redirect("/new-income")
+    if len(note) > 3000:
+        return render_template("error.html",note="Note text too long")
+    else:
+        add_income(amount,income_date,category,user_id,note)
+        return redirect("/new-income")
 
 @app.route("/dashboard")
 def dashboard():
